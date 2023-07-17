@@ -5,6 +5,7 @@ class Organism:
     def __init__(self, genotype):
         self.genotype = genotype
         self.weight, self.height = self.calculate_phenotype(genotype)
+        self.fitness = self.calculate_fitness()
 
     def calculate_phenotype(self, genotype):
         # Quadratic mapping: 
@@ -13,6 +14,11 @@ class Organism:
         weight = 2 * genotype ** 2 + 1
         height = 3 * genotype ** 2 + 2
         return weight, height
+
+    def calculate_fitness(self):
+        # Simple way: Fitness = weight + height
+        fitness = self.weight + self.height
+        return fitness
 
 POPULATION_SIZE = 50
 
@@ -27,13 +33,23 @@ def create_population():
     return population
 
 def selection(population):
-    sorted_population = sorted(population, key=lambda x: x.genotype, reverse=True)
+    sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
     surviving_parents = sorted_population[:POPULATION_SIZE // 2]
 
     # Reproduction
     children = []
-    for parent in surviving_parents:
-        child_genotype = parent.genotype + random.uniform(-0.1, 0.1)
+    for _ in range(POPULATION_SIZE // 2):
+        parent1 = random.choice(surviving_parents)
+        parent2 = random.choice(surviving_parents)
+
+        # Crossover
+        child_genotype = (parent1.genotype + parent2.genotype) / 2
+
+        # Mutation
+        mutation_rate = 0.1
+        if random.random() < mutation_rate:
+            child_genotype += random.uniform(-0.1, 0.1)
+
         child = Organism(child_genotype)
         children.append(child)
 
@@ -50,6 +66,7 @@ def main():
     weights_by_generation = [[organism.weight for organism in population]]
     heights_by_generation = [[organism.height for organism in population]]
     genotypes_by_generation = [[organism.genotype for organism in population]]
+    fitness_by_generation = [sum(organism.fitness for organism in population) / len(population)]  # Store average fitness
 
     for generation in range(1, NUM_GENERATIONS + 1):
         for organism in population:
@@ -57,21 +74,22 @@ def main():
 
         population = selection(population)
 
-        # Append genotype values for the current generation
+        # Append values for the current generation
         generations.append(generation)
         genotypes_by_generation.append([organism.genotype for organism in population])
         weights_by_generation.append([organism.weight for organism in population])
         heights_by_generation.append([organism.height for organism in population])
+        fitness_by_generation.append(sum(organism.fitness for organism in population) / len(population))  # Store average fitness
 
-
-    # Visualization: Line plot of average genotype value over generations
-    plt.figure()
-    plt.plot(generations, [sum(genotypes) / len(genotypes) for genotypes in genotypes_by_generation], label= "Average Genotype")
-    plt.plot(generations, [sum(weights) / len(weights) for weights in weights_by_generation], label= "Average Weight")
-    plt.plot(generations, [sum(heights) / len(heights) for heights in heights_by_generation], label= "Average Weight")
+    # Visualization: Line plot of average values over generations
+    plt.figure(figsize=(10, 6))
+    plt.plot(generations, [sum(genotypes) / len(genotypes) for genotypes in genotypes_by_generation], label="Average Genotype")
+    plt.plot(generations, [sum(weights) / len(weights) for weights in weights_by_generation], label="Average Weight")
+    plt.plot(generations, [sum(heights) / len(heights) for heights in heights_by_generation], label="Average Height")
+    plt.plot(generations, fitness_by_generation, label="Average Fitness")
     plt.xlabel("Generation")
     plt.ylabel("Average Value")
-    plt.title("Evolution Simulator - Average Genotype, Weight and Height over Generations")
+    plt.title("Evolution Simulator - Average Genotype, Weight, Height, and Fitness over Generations")
     plt.legend()
     plt.savefig("evolution.png")
 
