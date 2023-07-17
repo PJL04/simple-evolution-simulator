@@ -1,13 +1,18 @@
-# TODO Change self.phenotype = genotype
-
 import random
 import matplotlib.pyplot as plt
 
 class Organism:
     def __init__(self, genotype):
         self.genotype = genotype
-        # In more complex simulations, phenotype could be calculated based on the genotype through some function or mapping.
-        self.phenotype = genotype # For the sake of simplicity the 'phenotype' is considered to be the same as the 'genotype'. 
+        self.weight, self.height = self.calculate_phenotype(genotype)
+
+    def calculate_phenotype(self, genotype):
+        # Quadratic mapping: 
+        #   weight = 2 * genotype^2 +1
+        #   height = 3 * genotype^2 +2
+        weight = 2 * genotype ** 2 + 1
+        height = 3 * genotype ** 2 + 2
+        return weight, height
 
 POPULATION_SIZE = 50
 
@@ -42,25 +47,33 @@ def main():
     population = create_population()
 
     generations = [0]
+    weights_by_generation = [[organism.weight for organism in population]]
+    heights_by_generation = [[organism.height for organism in population]]
     genotypes_by_generation = [[organism.genotype for organism in population]]
 
     for generation in range(1, NUM_GENERATIONS + 1):
         for organism in population:
-            print(f"Generation: {generation}, Genotype: {organism.genotype:.2f}, Phenotype: {organism.phenotype:.2f}")
+            print(f"Generation: {generation}, Genotype: {organism.genotype:.2f}, Weight: {organism.weight:.2f}, Height: {organism.height:.2f}")
 
         population = selection(population)
 
         # Append genotype values for the current generation
         generations.append(generation)
         genotypes_by_generation.append([organism.genotype for organism in population])
+        weights_by_generation.append([organism.weight for organism in population])
+        heights_by_generation.append([organism.height for organism in population])
+
 
     # Visualization: Line plot of average genotype value over generations
     plt.figure()
-    plt.plot(generations, [sum(genotypes) / len(genotypes) for genotypes in genotypes_by_generation])
+    plt.plot(generations, [sum(genotypes) / len(genotypes) for genotypes in genotypes_by_generation], label= "Average Genotype")
+    plt.plot(generations, [sum(weights) / len(weights) for weights in weights_by_generation], label= "Average Weight")
+    plt.plot(generations, [sum(heights) / len(heights) for heights in heights_by_generation], label= "Average Weight")
     plt.xlabel("Generation")
-    plt.ylabel("Average Gentype Value")
-    plt.title("Evolution Simulator - Average Genotype Value over Generations")
-    plt.savefig("genotype_evolution.png")
+    plt.ylabel("Average Value")
+    plt.title("Evolution Simulator - Average Genotype, Weight and Height over Generations")
+    plt.legend()
+    plt.savefig("evolution.png")
 
 if __name__ == "__main__":
     main()
