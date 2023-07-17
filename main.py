@@ -1,6 +1,7 @@
 # TODO Change self.phenotype = genotype
 
 import random
+import matplotlib.pyplot as plt
 
 class Organism:
     def __init__(self, genotype):
@@ -40,13 +41,26 @@ NUM_GENERATIONS = 15
 def main():
     population = create_population()
 
-    for generation in range(NUM_GENERATIONS):
-        print(f"Generation {generation}")
+    generations = [0]
+    genotypes_by_generation = [[organism.genotype for organism in population]]
 
+    for generation in range(1, NUM_GENERATIONS + 1):
         for organism in population:
-            print(f"Genotype: {organism.genotype:.2f}, Phenotype: {organism.phenotype:.2f}")
+            print(f"Generation: {generation}, Genotype: {organism.genotype:.2f}, Phenotype: {organism.phenotype:.2f}")
 
         population = selection(population)
+
+        # Append genotype values for the current generation
+        generations.append(generation)
+        genotypes_by_generation.append([organism.genotype for organism in population])
+
+    # Visualization: Line plot of average genotype value over generations
+    plt.figure()
+    plt.plot(generations, [sum(genotypes) / len(genotypes) for genotypes in genotypes_by_generation])
+    plt.xlabel("Generation")
+    plt.ylabel("Average Gentype Value")
+    plt.title("Evolution Simulator - Average Genotype Value over Generations")
+    plt.savefig("genotype_evolution.png")
 
 if __name__ == "__main__":
     main()
