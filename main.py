@@ -32,7 +32,7 @@ def selection(population):
         child = Organism(child_genotype)
         children.append(child)
 
-    # Combine survivibg parents and children to create the new population
+    # Combine surviving parents and children to create the new population
     new_population = surviving_parents + children
     return new_population
 
